@@ -1,54 +1,66 @@
-import {createBrowserRouter, Navigate, Outlet,} from "react-router-dom";
-
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import Layout from "@/layout/Layout.tsx";
 import LoginPage from "@/pages/LoginPage.tsx";
 import HomePage from "@/pages/HomePage.tsx";
 
-// Ruta protegida: solo deja pasar si hay usuario
-function RequireAuth() {
-    // TODO
-    //const {user} = useAuth();
-    /* --------------------------- */
-    const user = {name:"John Doe"};
+import { useAuth } from "@/context/AuthContext";
+import AppProviders from "@/component/AppProviders";
 
-    /* --------------------------- */
-    if (!user) {
-        return <Navigate to="/login" replace/>;
-    }
-    return <Outlet/>;
+
+function RequireAuth() {
+  const { user } = useAuth();
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  return <Outlet />;
 }
 
-// Wrapper para usar Layout + Outlet
+
 function LayoutWrapper() {
-    return (
-        <Layout>
-            <Outlet/>
-        </Layout>
-    );
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
+}
+
+
+function Root() {
+  return (
+    <AppProviders>
+      <Outlet />
+    </AppProviders>
+  );
 }
 
 export const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <LayoutWrapper/>,
+  {
+    path: "/",
+    element: <Root />,  
+    children: [
+      {
+        element: <LayoutWrapper />,
         children: [
-            {
-                path: "/login",
-                element: <LoginPage/>,
-            },
-            {
-                element: <RequireAuth/>,
-                children: [
-                    {
-                        index: true, // "/"
-                        element: <HomePage/>,
-                    },
-                ],
-            },
+          {
+            path: "/login",
+            element: <LoginPage />,
+          },
+          {
+            element: <RequireAuth />,
+            children: [
+              {
+                index: true, 
+                element: <HomePage />,
+              },
+            ],
+          },
         ],
-    },
-    {
-        path: "*",
-        element: <Navigate to="/" replace/>,
-    },
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
+  },
 ]);
